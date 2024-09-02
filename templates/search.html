@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поиск специалистов</title>
+</head>
+
+<body>
+    <h2>Поиск специалистов</h2>
+    <form action="{{ url_for('search_specialists') }}" method="get">
+        <div>
+            <label for="specialty">Специальность:</label>
+            <input type="text" id="specialty" name="specialty" value="{{ request.args.get('specialty', '') }}">
+        </div>
+        <div>
+            <label for="location">Местоположение:</label>
+            <input type="text" id="location" name="location" value="{{ request.args.get('location', '') }}">
+        </div>
+        <div>
+            <input type="submit" value="Искать">
+        </div>
+    </form>
+
+    {% if specialists %}
+    <h3>Результаты поиска:</h3>
+    <ul>
+        {% for specialist in specialists %}
+        <li>
+            <strong><a href="{{ url_for('view_profile', id=specialist.id) }}">{{ specialist.name }}</a></strong> - {{
+            specialist.specialty }} ({{ specialist.location }})
+        </li>
+        {% endfor %}
+    </ul>
+    {% elif searched %}
+    <p>Специалисты не найдены.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('search_specialists') }}">Вернуться к поиску</a></p>
+</body>
+
+</html>
