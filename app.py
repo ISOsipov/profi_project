@@ -23,9 +23,9 @@ load_dotenv()  # загружаем переменные из .env файла
 
 # Настройка Cloudinary
 cloudinary.config(
-    cloud_name=os.getenv("dsbxe2uhk"),
-    api_key=os.getenv("846943243245654"),
-    api_secret=os.getenv("uS2puDqZseQZQRAP1Ti9_GkeALo"),
+    cloud_name="dsbxe2uhk",
+    api_key="846943243245654",
+    api_secret="uS2puDqZseQZQRAP1Ti9_GkeALo",
 )
 
 
@@ -34,12 +34,9 @@ def upload_file_to_cloudinary(file):
         upload_result = upload(file)
         return upload_result["secure_url"]
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print(f"An error occurred during file upload: {e}")
         return None
 
-
-# login_manager = LoginManager()
-# login_manager.init_app(app)
 
 app = Flask(__name__)
 app.secret_key = "7yrtu76209846yyyrqqll"
@@ -62,6 +59,9 @@ class Specialist(UserMixin, db.Model):
     location = db.Column(db.String(100), nullable=False)
     experience = db.Column(db.Integer)
     about = db.Column(db.Text)
+    education = db.Column(db.Text)
+    certifications = db.Column(db.Text)
+    profile_picture = db.Column(db.String(200))
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -96,7 +96,7 @@ class Review(db.Model):
 def create_app():
     app = Flask(__name__)
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///specialists.db"
-    app.config["SECRET_KEY"] = "your-secret-key"
+    app.config["SECRET_KEY"] = "7yrtu76209846yyyrqqll"
 
     db.init_app(app)
     migrate.init_app(app, db)
@@ -123,6 +123,7 @@ def create_app():
     @app.route("/profile/<int:id>")
     def view_profile(id):
         specialist = Specialist.query.get_or_404(id)
+        db.session.refresh(specialist)  # Обновляем объект из базы данных
         return render_template("profile.html", specialist=specialist)
 
     @app.route("/edit_profile/<int:id>", methods=["GET", "POST"])
@@ -141,15 +142,22 @@ def create_app():
             specialist.education = request.form["education"]
             specialist.certifications = request.form["certifications"]
 
-            # Обработка загрузки фотографии
             if "profile_picture" in request.files:
                 file = request.files["profile_picture"]
-            if file and allowed_file(file.filename):
+            if file and file.filename != "":
+                print(f"Attempting to upload file: {file.filename}")
+            try:
                 file_url = upload_file_to_cloudinary(file)
-            if file_url:
-                specialist.profile_picture = file_url
+                print(f"Cloudinary upload result: {file_url}")
+                if file_url:
+                    specialist.profile_picture = file_url
+                    print(f"Profile picture URL set to: {specialist.profile_picture}")
+            except Exception as e:
+                print(f"Error during file upload: {e}")
+                flash(f"Error uploading file: {str(e)}", "error")
 
             db.session.commit()
+            print(f"After commit - Profile picture URL: {specialist.profile_picture}")
             flash("Your profile has been updated!", "success")
             return redirect(url_for("view_profile", id=specialist.id))
 
@@ -173,24 +181,6 @@ def create_app():
             else:
                 flash("Rating must be between 1 and 5", "danger")
         return render_template("add_review.html", specialist=specialist)
-
-    @app.route("/edit_profile/<int:id>", methods=["GET", "POST"])
-    @login_required
-    def edit_profile(id):
-        specialist = Specialist.query.get_or_404(id)
-        if current_user.id != specialist.id:
-            return "Доступ запрещен", 403
-
-        if request.method == "POST":
-            specialist.name = request.form["name"]
-            specialist.specialty = request.form["specialty"]
-            specialist.location = request.form["location"]
-            specialist.experience = request.form.get("experience", type=int)
-            specialist.about = request.form["about"]
-            db.session.commit()
-            return redirect(url_for("view_profile", id=specialist.id))
-
-        return render_template("edit_profile.html", specialist=specialist)
 
     @app.route("/register", methods=["GET", "POST"])
     def register_specialist():
