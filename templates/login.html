@@ -1,31 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход в систему</title>
-</head>
+{% block title %}Login{% endblock %}
 
-<body>
-    <h2>Вход в систему</h2>
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
-    {% endif %}
-    <form action="/login" method="post">
-        <div>
-            <label for="username">Имя пользователя:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div>
-            <input type="submit" value="Войти">
-        </div>
-    </form>
-    <p>Нет аккаунта? <a href="{{ url_for('register_specialist') }}">Зарегистрируйтесь</a></p>
-</body>
-
-</html>
+{% block content %}
+<h2>Login</h2>
+<form method="POST">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <input type="submit" value="Login">
+    </div>
+</form>
+{% if error %}
+<p style="color: red;">{{ error }}</p>
+{% endif %}
+<p>Don't have an account? <a href="{{ url_for('register_specialist') }}">Register here</a></p>
+{% endblock %}

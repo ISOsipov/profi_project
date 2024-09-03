@@ -1,39 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Регистрация специалиста</title>
-</head>
+{% block title %}Register{% endblock %}
 
-<body>
-    <h2>Регистрация специалиста</h2>
-    <form action="/register" method="post">
-        <div>
-            <label for="username">Имя пользователя:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div>
-            <label for="name">Полное имя:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div>
-            <label for="specialty">Специальность:</label>
-            <input type="text" id="specialty" name="specialty" required>
-        </div>
-        <div>
-            <label for="location">Местоположение:</label>
-            <input type="text" id="location" name="location" required>
-        </div>
-        <div>
-            <input type="submit" value="Зарегистрироваться">
-        </div>
-    </form>
-</body>
-
-</html>
+{% block content %}
+<h2>Register as a Specialist</h2>
+<form method="POST">
+    <div>
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+    </div>
+    <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div>
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    <div>
+        <label for="specialty">Specialty:</label>
+        <input type="text" id="specialty" name="specialty" required>
+    </div>
+    <div>
+        <label for="location">Location:</label>
+        <input type="text" id="location" name="location" required>
+    </div>
+    <div>
+        <input type="submit" value="Register">
+    </div>
+</form>
+<p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+{% endblock %}

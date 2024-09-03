@@ -1,25 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
+{% extends "base.html" %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Профиль специалиста</title>
-</head>
+{% block content %}
+<h2>Profile of {{ specialist.name }}</h2>
+{% if specialist.profile_picture %}
+<img src="{{ url_for('static', filename='profile_pics/' + specialist.profile_picture) }}" alt="Profile picture">
+{% endif %}
+<p>Specialty: {{ specialist.specialty }}</p>
+<p>Location: {{ specialist.location }}</p>
+<p>Experience: {{ specialist.experience or 'Not specified' }} years</p>
+<p>About: {{ specialist.about or 'Not specified' }}</p>
+<p>Education: {{ specialist.education or 'Not specified' }}</p>
+<p>Certifications: {{ specialist.certifications or 'Not specified' }}</p>
 
-<body>
-    <h2>Профиль специалиста</h2>
-    <div>
-        <p><strong>Имя:</strong> {{ specialist.name }}</p>
-        <p><strong>Специальность:</strong> {{ specialist.specialty }}</p>
-        <p><strong>Местоположение:</strong> {{ specialist.location }}</p>
-        <p><strong>Опыт работы:</strong> {{ specialist.experience or 'Не указано' }}</p>
-        <p><strong>О себе:</strong> {{ specialist.about or 'Не указано' }}</p>
-    </div>
-    {% if current_user.id == specialist.id %}
-    <p><a href="{{ url_for('edit_profile', id=specialist.id) }}">Редактировать профиль</a></p>
-    {% endif %}
-    <p><a href="{{ url_for('search_specialists') }}">Вернуться к поиску</a></p>
-</body>
+<h3>Average Rating: {{ '%.1f' % specialist.average_rating() if specialist.average_rating() else 'No ratings yet' }}</h3>
 
-</html>
+
+<h3>Reviews</h3>
+{% if specialist.reviews %}
+{% for review in specialist.reviews %}
+<div>
+    <p>Rating: {{ review.rating }}/5</p>
+    <p>{{ review.content }}</p>
+    <p>Posted on: {{ review.created_at.strftime('%Y-%m-%d') }}</p>
+</div>
+{% endfor %}
+{% else %}
+<p>No reviews yet.</p>
+{% endif %}
+
+{% if current_user.is_authenticated %}
+<a href="{{ url_for('add_review', specialist_id=specialist.id) }}">Add a Review</a>
+{% else %}
+<p>Please <a href="{{ url_for('login') }}">log in</a> to add a review.</p>
+{% endif %}
+{% endblock %}

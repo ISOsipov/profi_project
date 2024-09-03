@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Specialist Finder{% endblock %}</title>
+    <!-- Здесь вы можете добавить ссылки на CSS файлы -->
+</head>
+
+<body>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <header>
+        <!-- Здесь можно добавить навигационное меню -->
+        <nav>
+            <a href="{{ url_for('home') }}">Home</a>
+            <a href="{{ url_for('search_specialists') }}">Search</a>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('view_profile', id=current_user.id) }}">My Profile</a>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register_specialist') }}">Register</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <footer>
+        <!-- Здесь можно добавить информацию о подвале сайта -->
+        <p>&copy; 2023 Specialist Finder</p>
+    </footer>
+
+    <!-- Здесь вы можете добавить ссылки на JavaScript файлы -->
+</body>
+
+</html>

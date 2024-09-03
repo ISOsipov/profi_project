@@ -1,28 +1,56 @@
-from flask import Flask, request, jsonify, render_template, redirect, url_for
+from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import (
     LoginManager,
     login_user,
     login_required,
+    logout_user,
     current_user,
     UserMixin,
 )
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
-import datetime
+from datetime import datetime, timedelta
 from functools import wraps
+import os
+from dotenv import load_dotenv
+from cloudinary.uploader import upload
+from cloudinary.utils import cloudinary_url
+import cloudinary
+
+load_dotenv()  # загружаем переменные из .env файла
+
+# Настройка Cloudinary
+cloudinary.config(
+    cloud_name=os.getenv("dsbxe2uhk"),
+    api_key=os.getenv("846943243245654"),
+    api_secret=os.getenv("uS2puDqZseQZQRAP1Ti9_GkeALo"),
+)
+
+
+def upload_file_to_cloudinary(file):
+    try:
+        upload_result = upload(file)
+        return upload_result["secure_url"]
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 
 # login_manager = LoginManager()
 # login_manager.init_app(app)
 
 app = Flask(__name__)
+app.secret_key = "7yrtu76209846yyyrqqll"
 app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///specialists.db"
-app.config["SECRET_KEY"] = "your-secret-key"  # Замените на случайную строку
+app.config["SECRET_KEY"] = "7yrtu76209846yyyrqqll"  # Замените на случайную строку
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
 
 class Specialist(UserMixin, db.Model):
@@ -40,6 +68,29 @@ class Specialist(UserMixin, db.Model):
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
+
+    def average_rating(self):
+        if self.reviews:
+            return sum(review.rating for review in self.reviews) / len(self.reviews)
+        return None
+
+    @property
+    def is_authenticated(self):
+        return True
+
+
+class Review(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    content = db.Column(db.Text, nullable=False)
+    rating = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    specialist_id = db.Column(
+        db.Integer, db.ForeignKey("specialist.id"), nullable=False
+    )
+    specialist = db.relationship("Specialist", backref=db.backref("reviews", lazy=True))
+
+    def __repr__(self):
+        return f"<Review {self.id} for Specialist {self.specialist_id}>"
 
 
 def create_app():
@@ -73,6 +124,55 @@ def create_app():
     def view_profile(id):
         specialist = Specialist.query.get_or_404(id)
         return render_template("profile.html", specialist=specialist)
+
+    @app.route("/edit_profile/<int:id>", methods=["GET", "POST"])
+    @login_required
+    def edit_profile(id):
+        specialist = Specialist.query.get_or_404(id)
+        if current_user.id != specialist.id:
+            return "Доступ запрещен", 403
+
+        if request.method == "POST":
+            specialist.name = request.form["name"]
+            specialist.specialty = request.form["specialty"]
+            specialist.location = request.form["location"]
+            specialist.experience = request.form.get("experience", type=int)
+            specialist.about = request.form["about"]
+            specialist.education = request.form["education"]
+            specialist.certifications = request.form["certifications"]
+
+            # Обработка загрузки фотографии
+            if "profile_picture" in request.files:
+                file = request.files["profile_picture"]
+            if file and allowed_file(file.filename):
+                file_url = upload_file_to_cloudinary(file)
+            if file_url:
+                specialist.profile_picture = file_url
+
+            db.session.commit()
+            flash("Your profile has been updated!", "success")
+            return redirect(url_for("view_profile", id=specialist.id))
+
+        return render_template("edit_profile.html", specialist=specialist)
+
+    @app.route("/add_review/<int:specialist_id>", methods=["GET", "POST"])
+    @login_required
+    def add_review(specialist_id):
+        specialist = Specialist.query.get_or_404(specialist_id)
+        if request.method == "POST":
+            content = request.form["content"]
+            rating = int(request.form["rating"])
+            if 1 <= rating <= 5:
+                review = Review(
+                    content=content, rating=rating, specialist_id=specialist.id
+                )
+                db.session.add(review)
+                db.session.commit()
+                flash("Your review has been added!", "success")
+                return redirect(url_for("view_profile", id=specialist.id))
+            else:
+                flash("Rating must be between 1 and 5", "danger")
+        return render_template("add_review.html", specialist=specialist)
 
     @app.route("/edit_profile/<int:id>", methods=["GET", "POST"])
     @login_required
@@ -124,24 +224,22 @@ def create_app():
             specialist = Specialist.query.filter_by(username=username).first()
             if specialist and specialist.check_password(password):
                 # Генерация токена
-                token = jwt.encode(
-                    {
-                        "username": specialist.username,
-                        "exp": datetime.datetime.utcnow()
-                        + datetime.timedelta(hours=24),
-                    },
-                    app.config["SECRET_KEY"],
-                )
-
-                # В реальном приложении здесь вы бы сохранили токен в сессии или отправили клиенту
-                # Для простоты мы просто перенаправим на страницу поиска
-                return redirect(url_for("search_specialists", token=token))
+                login_user(specialist)
+                flash("Logged in successfully.", "success")
+                return redirect(url_for("search_specialists"))
             else:
                 return render_template(
                     "login.html", error="Неверное имя пользователя или пароль"
                 )
 
         return render_template("login.html")
+
+    @app.route("/logout")
+    @login_required
+    def logout():
+        logout_user()
+        flash("You have been logged out successfully.", "info")
+        return redirect(url_for("home"))
 
     @app.route("/search", methods=["GET"])
     # @token_required
@@ -172,7 +270,7 @@ def create_app():
 
     @app.route("/")
     def home():
-        return "Welcome to the Specialist Finder App!"
+        return render_template("home.html")
 
     return app
 
