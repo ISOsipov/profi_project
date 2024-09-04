@@ -1,40 +1,51 @@
 {% extends "base.html" %}
 
+{% block title %}Edit Profile{% endblock %}
+
 {% block content %}
-<h2>Edit Profile</h2>
-<form method="POST" enctype="multipart/form-data">
-    <div>
-        <label for="name">Name:</label>
-        <input type="text" id="name" name="name" value="{{ specialist.name }}" required>
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">Edit Profile</h2>
+        <form method="POST" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <input type="text" class="form-control" id="name" name="name" value="{{ specialist.name }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="specialty" class="form-label">Specialty:</label>
+                <input type="text" class="form-control" id="specialty" name="specialty"
+                    value="{{ specialist.specialty }}" required>
+            </div>
+            <div class="mb-3">
+                <label for="location" class="form-label">Location:</label>
+                <input type="text" class="form-control" id="location" name="location" value="{{ specialist.location }}"
+                    required>
+            </div>
+            <div class="mb-3">
+                <label for="experience" class="form-label">Years of Experience:</label>
+                <input type="number" class="form-control" id="experience" name="experience"
+                    value="{{ specialist.experience or '' }}">
+            </div>
+            <div class="mb-3">
+                <label for="about" class="form-label">About:</label>
+                <textarea class="form-control" id="about" name="about" rows="3">{{ specialist.about or '' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="education" class="form-label">Education:</label>
+                <textarea class="form-control" id="education" name="education"
+                    rows="3">{{ specialist.education or '' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="certifications" class="form-label">Certifications:</label>
+                <textarea class="form-control" id="certifications" name="certifications"
+                    rows="3">{{ specialist.certifications or '' }}</textarea>
+            </div>
+            <div class="mb-3">
+                <label for="profile_picture" class="form-label">Profile Picture:</label>
+                <input type="file" class="form-control" id="profile_picture" name="profile_picture">
+            </div>
+            <button type="submit" class="btn btn-primary">Update Profile</button>
+        </form>
     </div>
-    <div>
-        <label for="specialty">Specialty:</label>
-        <input type="text" id="specialty" name="specialty" value="{{ specialist.specialty }}" required>
-    </div>
-    <div>
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" value="{{ specialist.location }}" required>
-    </div>
-    <div>
-        <label for="experience">Years of Experience:</label>
-        <input type="number" id="experience" name="experience" value="{{ specialist.experience or '' }}">
-    </div>
-    <div>
-        <label for="about">About:</label>
-        <textarea id="about" name="about">{{ specialist.about or '' }}</textarea>
-    </div>
-    <div>
-        <label for="education">Education:</label>
-        <textarea id="education" name="education">{{ specialist.education or '' }}</textarea>
-    </div>
-    <div>
-        <label for="certifications">Certifications:</label>
-        <textarea id="certifications" name="certifications">{{ specialist.certifications or '' }}</textarea>
-    </div>
-    <div>
-        <label for="profile_picture">Profile Picture:</label>
-        <input type="file" id="profile_picture" name="profile_picture">
-    </div>
-    <button type="submit">Update Profile</button>
-</form>
+</div>
 {% endblock %}

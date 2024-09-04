@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Edit Review</h2>
+<form method="POST">
+    <div class="mb-3">
+        <label for="content" class="form-label">Review:</label>
+        <textarea class="form-control" id="content" name="content" rows="4" required>{{ review.content }}</textarea>
+    </div>
+    <div class="mb-3">
+        <label for="rating" class="form-label">Rating (1-5):</label>
+        <input type="number" class="form-control" id="rating" name="rating" min="1" max="5" value="{{ review.rating }}"
+            required>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Review</button>
+</form>
+{% endblock %}

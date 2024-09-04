@@ -1,5 +1,1 @@
-*.pyc
-__pycache__/
-venv/
-*.db
-.env
+echo "new_venv/" >> .gitignore echo "*.pyc" >> .gitignore echo "__pycache__/" >> .gitignore echo "*.db" >> .gitignore echo ".env" >> .gitignore

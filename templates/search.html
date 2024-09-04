@@ -3,32 +3,40 @@
 {% block title %}Search Specialists{% endblock %}
 
 {% block content %}
-<h2>Search Specialists</h2>
-<form action="{{ url_for('search_specialists') }}" method="get">
-    <div>
-        <label for="specialty">Specialty:</label>
-        <input type="text" id="specialty" name="specialty" value="{{ request.args.get('specialty', '') }}">
-    </div>
-    <div>
-        <label for="location">Location:</label>
-        <input type="text" id="location" name="location" value="{{ request.args.get('location', '') }}">
-    </div>
-    <div>
-        <input type="submit" value="Search">
+<h2 class="mb-4">Search Specialists</h2>
+<form action="{{ url_for('search_specialists') }}" method="get" class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="specialty" name="specialty" placeholder="Specialty"
+                value="{{ request.args.get('specialty', '') }}">
+        </div>
+        <div class="col-md-4">
+            <input type="text" class="form-control" id="location" name="location" placeholder="Location"
+                value="{{ request.args.get('location', '') }}">
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+        </div>
     </div>
 </form>
 
 {% if specialists %}
 <h3>Results:</h3>
-<ul>
+<div class="row row-cols-1 row-cols-md-3 g-4">
     {% for specialist in specialists %}
-    <li>
-        <a href="{{ url_for('view_profile', id=specialist.id) }}">{{ specialist.name }}</a> -
-        {{ specialist.specialty }} ({{ specialist.location }})
-    </li>
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ specialist.name }}</h5>
+                <h6 class="card-subtitle mb-2 text-muted">{{ specialist.specialty }}</h6>
+                <p class="card-text">Location: {{ specialist.location }}</p>
+                <a href="{{ url_for('view_profile', id=specialist.id) }}" class="btn btn-primary">View Profile</a>
+            </div>
+        </div>
+    </div>
     {% endfor %}
-</ul>
+</div>
 {% elif searched %}
-<p>No specialists found matching your criteria.</p>
+<p class="alert alert-info">No specialists found matching your criteria.</p>
 {% endif %}
 {% endblock %}
